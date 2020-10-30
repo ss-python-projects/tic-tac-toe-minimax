@@ -22,11 +22,11 @@ def debug_print_children(children):
 ###
 
 def is_terminal(node):
-  board = node
+  board = node['board']
   return has_winner(board, 'O') or has_winner(board, 'X') or is_tied(board)
 
 def node_value(node):
-  board = node
+  board = node['board']
   if (has_winner(board, 'O') == True):
     return 1
   if (has_winner(board, 'X') == True):
@@ -36,32 +36,40 @@ def node_value(node):
 
 def node_children(node, char):
   children = []
-  board = node
-  for line in range(3):
-    for col in range(3):
-      if (board[line][col] == ' '):
-        new_board = copy.deepcopy(board)
-        new_board[line][col] = char
-        children.append(new_board)
+  board = node['board']
+  for x in range(3):
+    for y in range(3):
+      if (board[x][y] == ' '):
+        child = {'board': copy.deepcopy(board), 'move': [x, y]}
+        child['board'][x][y] = char
+        children.append(child)
   return children
 
 def minimax(node, is_maximizing):
   if (is_terminal(node)):
-    return node_value(node)
+    return node_value(node), node
 
   children = node_children(node, 'O' if is_maximizing else 'X')
 
   if (is_maximizing):
+    biggest_node = None
     value = -1
     for child in children:
-      value = max(value, minimax(child, False))
-    return value
+      v, n = minimax(child, False)
+      if (v > value):
+        value = v
+        biggest_node = child
+    return value, biggest_node
 
   else:
+    smallest_node = None
     value = 1
     for child in children:
-      value = min(value, minimax(child, True))
-    return value
+      v, n = minimax(child, True)
+      if (v < value):
+        value = v
+        smallest_node = child
+    return value, smallest_node
 
 ###
 # Game core
@@ -89,9 +97,10 @@ def ask_user_move():
   return x, y
 
 def pick_machine_move():
-  # todo: implement
-  minimax(board, True)
-  return 0, 0
+  node = {'board': board}
+  _, node = minimax(node, True)
+  [x, y] = node['move']
+  return x, y
 
 def make_move(symbol, x, y):
   board[x][y] = symbol
