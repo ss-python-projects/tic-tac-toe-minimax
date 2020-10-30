@@ -24,7 +24,6 @@ def debug_print_children(children):
 def is_terminal(node):
   board = node
   return has_winner(board, 'O') or has_winner(board, 'X') or is_tied(board)
-  # return has_winner(board, 'O')
 
 def node_value(node):
   board = node
@@ -36,44 +35,30 @@ def node_value(node):
     return 0
 
 def node_children(node, char):
-  # print('node: ', node) #debug
   children = []
   board = node
   for line in range(3):
     for col in range(3):
       if (board[line][col] == ' '):
         new_board = copy.deepcopy(board)
-        # print('board', board) #debug
-        # print('new board', new_board) #debug
         new_board[line][col] = char
         children.append(new_board)
   return children
 
 def minimax(node, is_maximizing):
-  # todo: implement
-  # return 2, 2
   if (is_terminal(node)):
-    # print('=== terminal') #debug
-    # print('node: ', node) #debug
-    # print('value: ', node_value(node)) #debug
     return node_value(node)
 
   children = node_children(node, 'O' if is_maximizing else 'X')
 
   if (is_maximizing):
     value = -1
-    # print('=== max') #debug
-    # print('node: ', node) #debug
-    # debug_print_children(children) #debug
     for child in children:
       value = max(value, minimax(child, False))
     return value
 
   else:
     value = 1
-    # print('=== min') #debug
-    # print('node: ', node) #debug
-    # debug_print_children(children) #debug
     for child in children:
       value = min(value, minimax(child, True))
     return value
