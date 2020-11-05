@@ -1,8 +1,14 @@
 import copy
 import os
 
-# Player 1: User
-# Player 2: Machine
+###
+# Hard depth: 9 (max)
+# Medium depth: 5
+# Easy depth: 1
+###
+
+# X: User
+# O: Machine
 
 board = [
   [' ', ' ', ' '],
@@ -30,9 +36,9 @@ def get_node_value(node):
   board = node['board']
   if (is_winner(board, 'O') == True):
     return 1
-  if (is_winner(board, 'X') == True):
+  elif (is_winner(board, 'X') == True):
     return -1
-  if (is_tied(board) == True):
+  else:
     return 0
 
 """
@@ -51,26 +57,26 @@ def get_node_children(node, char):
   return children
 
 """
-Given a list of nodes, return the biggest one (max).
+Given a list of nodes, return the max one.
 """
-def get_max_node(nodes):
-  max_node = None
+def get_max_node(nodes, depth):
+  max_node = nodes[len(nodes)-1]
   max_value = -1
   for node in nodes:
-    v, n = minimax(node, False)
+    v, n = minimax(node, False, depth-1)
     if (v > max_value):
       max_value = v
       max_node = node
   return max_value, max_node
 
 """
-Given a list of nodes, return the smallest one (min).
+Given a list of nodes, return the min one.
 """
-def get_min_node(nodes):
-  min_node = None
+def get_min_node(nodes, depth):
+  min_node = nodes[len(nodes)-1]
   min_value = 1
   for node in nodes:
-    v, n = minimax(node, True)
+    v, n = minimax(node, True, depth-1)
     if (v < min_value):
       min_value = v
       min_node = node
@@ -79,27 +85,33 @@ def get_min_node(nodes):
 """
 Minimax implementation.
 """
-def minimax(node, is_maximizing):
-  if (is_node_terminal(node)):
+def minimax(node, is_maximizing, depth):
+  if (depth == 0 or is_node_terminal(node)):
     return get_node_value(node), node
 
   children = get_node_children(node, 'O' if is_maximizing else 'X')
 
   if (is_maximizing):
-    value, node = get_max_node(children)
+    value, node = get_max_node(children, depth)
     return value, node
 
   else:
-    value, node = get_min_node(children)
+    value, node = get_min_node(children, depth)
     return value, node
 
 ###
 # Game core
 ###
 
+"""
+Clear the terminal screen.
+"""
 def clear():
   os.system('clear')
 
+"""
+Check if current round refers to the player 1's turn.
+"""
 def is_player_1_turn(round):
   return round % 2 == 1
 
@@ -135,9 +147,9 @@ def ask_user_move():
 Pick a move for the machine (AI) and then convert it
 into a 2D coordinate (x, y).
 """
-def pick_machine_move():
+def pick_machine_move(depth):
   node = {'board': board}
-  _, node = minimax(node, True)
+  _, node = minimax(node, True, depth)
   [x, y] = node['move']
   return x, y
 
@@ -148,6 +160,9 @@ position on the board.
 def make_move(symbol, x, y):
   board[x][y] = symbol
 
+"""
+Check if given char won the match.
+"""
 def is_winner(board, char):
   return (
     board[0][0] == char and board[0][1] == char and board[0][2] == char or # line 1
@@ -162,15 +177,42 @@ def is_winner(board, char):
     board[2][0] == char and board[1][1] == char and board[0][2] == char # sec diag
   )
 
+"""
+Check if current state is a draw by checking if any cell
+is empty.
+"""
 def is_tied(board):
   return (
-      board[0][0] != ' ' and board[0][1] != ' ' and board[0][2] != ' ' and
-      board[1][0] != ' ' and board[1][1] != ' ' and board[1][2] != ' ' and
-      board[2][0] != ' ' and board[2][1] != ' ' and board[2][2] != ' '
+    board[0][0] != ' ' and board[0][1] != ' ' and board[0][2] != ' ' and
+    board[1][0] != ' ' and board[1][1] != ' ' and board[1][2] != ' ' and
+    board[2][0] != ' ' and board[2][1] != ' ' and board[2][2] != ' '
   )
+
+"""
+Ask the user for the difficulty level.
+"""
+def ask_difficulty_level():
+  option = 0
+  while (True):
+    print("[1] Fácil")
+    print("[2] Médio")
+    print("[3] Difícil")
+    option = int(input('Qual a dificuldade? '))
+    if (option > 0 and option < 4):
+      break
+
+  if (option == 1):
+    return 1
+  if (option == 2):
+    return 5
+  if (option == 3):
+    return 9
 
 def play():
   round = 0
+
+  depth = ask_difficulty_level()
+  clear()
 
   while (True):
     round = round + 1
@@ -195,7 +237,7 @@ def play():
       make_move('X', x, y)
 
     else:
-      x, y = pick_machine_move()
+      x, y = pick_machine_move(depth)
       make_move('O', x, y)
 
 play()
