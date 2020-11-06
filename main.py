@@ -233,11 +233,11 @@ def play():
       break
 
     if (is_player_1_turn(round)):
-      x, y = ask_user_move()
-      make_move('X', x, y)
-
-    else:
       x, y = pick_machine_move(depth)
       make_move('O', x, y)
+
+    else:
+      x, y = ask_user_move()
+      make_move('X', x, y)
 
 play()
