@@ -1,3 +1,4 @@
+import math
 import copy
 import os
 
@@ -28,13 +29,37 @@ def is_node_terminal(node):
   board = node['board']
   return is_winner(board, 'O') or is_winner(board, 'X') or is_tied(board)
 
+def are_middles_empty(board):
+  mid1 = board[0][1]
+  mid2 = board[1][0]
+  mid3 = board[1][2]
+  mid4 = board[2][1]
+  return (mid1 == ' ' and mid2 == ' ' and mid3 == ' ' and mid4 == ' ')
+
+def is_trap(board):
+  # 0,0 - 0,2 - 2,0 - 2,2
+  # 1,1
+  quina1 = board[0][0]
+  quina2 = board[0][2]
+  quina3 = board[2][0]
+  quina4 = board[2][2]
+  meio = board[1][1]
+  return (
+    (quina1 == 'O' and quina2 == 'O' and quina3 == 'O' and quina4 == 'X' and meio == 'X' and are_middles_empty(board)) or
+    (quina2 == 'O' and quina3 == 'O' and quina4 == 'O' and quina1 == 'X' and meio == 'X' and are_middles_empty(board)) or
+    (quina3 == 'O' and quina4 == 'O' and quina1 == 'O' and quina2 == 'X' and meio == 'X' and are_middles_empty(board)) or
+    (quina4 == 'O' and quina1 == 'O' and quina2 == 'O' and quina3 == 'X' and meio == 'X' and are_middles_empty(board))
+  )
+
 """
 Calculate the node value. This logic varies from game
 to game.
 """
 def get_node_value(node):
   board = node['board']
-  if (is_winner(board, 'O') == True):
+  if (is_winner(board, 'O') == True and is_trap(board)):
+    return 2
+  elif (is_winner(board, 'O') == True):
     return 1
   elif (is_winner(board, 'X') == True):
     return -1
@@ -60,7 +85,7 @@ def get_node_children(node, char):
 Given a list of nodes, return the max one.
 """
 def get_max_node(nodes, depth):
-  max_node = nodes[len(nodes)-1]
+  max_node = nodes[0]
   max_value = -1
   for node in nodes:
     v, n = minimax(node, False, depth-1)
@@ -73,8 +98,8 @@ def get_max_node(nodes, depth):
 Given a list of nodes, return the min one.
 """
 def get_min_node(nodes, depth):
-  min_node = nodes[len(nodes)-1]
-  min_value = 1
+  min_node = nodes[0]
+  min_value = 2
   for node in nodes:
     v, n = minimax(node, True, depth-1)
     if (v < min_value):
@@ -93,6 +118,8 @@ def minimax(node, is_maximizing, depth):
 
   if (is_maximizing):
     value, node = get_max_node(children, depth)
+    if (value == 2):
+      print('max', value, node)
     return value, node
 
   else:
@@ -217,7 +244,7 @@ def play():
   while (True):
     round = round + 1
 
-    clear()
+    # clear()
     print_board()
 
     if (is_winner(board, 'X') == True):
